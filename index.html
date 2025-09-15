@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards Study App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Verdana', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+            max-height: 800px;
+        }
+
+        .input-section.hidden {
+            max-height: 0;
+            opacity: 0;
+            padding: 0;
+            margin: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .input-section:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #495057;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .json-format {
+            position: relative;
+            background: #ffffff;
+            color: #4b4b25;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Inconsolata', monospace;
+            font-size: 1em;
+            border: 2px solid #dee2e6;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-family: 'Inconsolata', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+
+
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: #ffffff;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+            color: #4b4b25;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8d7da;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .flashcards-container {
+            display: none;
+            margin-top: 0px;
+        }
+
+        .flashcards-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .card-counter {
+            text-align: center;
+            color: #495057;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .flashcard {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            min-height: 300px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            perspective: 1000px;
+
+            overflow: hidden;
+        }
+
+        .flashcard:hover {
+            /* transform: scale(1.02); */
+
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.4s ease;
+            transform-style: preserve-3d;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            user-select: none;
+
+        }
+
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front,
+        .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .flashcard-back {
+            transform: rotateY(180deg);
+        }
+
+        .question {
+            font-size: 1.5em;
+            color: #2c3e50;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        .answer {
+            font-size: 1.2em;
+            color: #000000;
+            line-height: 1.4;
+        }
+
+        .hint-text {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #adb5bd;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 20px;
+            user-select: none;
+        }
+
+        #toggleBtn {
+            position: relative;
+            bottom: 71px;
+            text-align: center;
+            z-index: 2000;
+            float: right;
+            padding: 15px 15px;
+            box-shadow: none;
+            background: #f8f7fc;
+
+        }
+
+        #toggleBtn:hover {
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+
+        .nav-button {
+            flex: 1;
+            padding: 15px;
+            background: white;
+            border: 2px solid #dee2e6;
+            color: #495057;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .shuffle-button {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .flashcard {
+                padding: 30px 30px;
+            }
+
+            .question {
+                font-size: 1.2em;
+            }
+
+            .answer {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>📚 Flashcards</h1>
+        <button id="toggleBtn" class="secondary" onclick="toggleInputSection()"><i class="fas fa-gear"></i>
+        </button>
+        <div class="input-section" id="input-section">
+            <label class="input-label" for="jsonInput">
+                Prompt
+            </label>
+            <div id="json-format" class="json-format">
+                <button id="copy-btn" class="secondary" style="
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        padding: 4px 8px;
+        font-size: 0.9em;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+    ">Copia</button>
+
+                <pre id="json-format">
+Leggi attentamente il file allegato e genera delle domande e delle risposte
+approfondite per aiutarmi a studiare. Non usare caratteri speciali.
+
+Formato richiesto:
+[
+    {
+        "domanda": "Qual è la capitale d'Italia?",
+        "risposta": "Roma"
+    },
+    {
+        "domanda": "Quanto fa 2+2?",
+        "risposta": "4"
+    }
+]
+    </pre>
+            </div>
+            <textarea id="jsonInput" placeholder='Incolla qui il tuo JSON...'></textarea>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="button-group">
+                <button class="secondary" onclick="loadExample()">Carica Esempio</button>
+                <button onclick="loadFlashcards()">Genera Flashcards</button>
+            </div>
+        </div>
+
+        <div class="flashcards-container" id="flashcardsContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="card-counter" id="cardCounter">
+                Card 1 di 1
+            </div>
+            <div class="flashcard" id="flashcard" onclick="flipCard()">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="question" id="questionText"></div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="answer" id="answerText"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation-buttons">
+                <button class="nav-button" onclick="previousCard()" id="prevBtn">
+                    ← Precedente
+                </button>
+                <button class="nav-button shuffle-button" onclick="shuffleCards()">
+                    🔀 Mescola
+                </button>
+                <button class="nav-button" onclick="nextCard()" id="nextBtn">
+                    Successiva →
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let flashcards = [];
+        let currentIndex = 0;
+        let viewedCards = new Set();
+        const inputSection = document.getElementById('input-section');
+        const flashcardsContainer = document.getElementById('flashcardsContainer');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const errorMessage = document.getElementById('errorMessage');
+
+        function toggleInputSection() {
+            inputSection.classList.toggle('hidden');
+            // if (inputSection.classList.contains('hidden')) {
+            //     toggleBtn.textContent = 'Mostra Input';
+            // } else {
+            //     toggleBtn.textContent = 'Nascondi Input';
+            // }
+        }
+
+        function loadExample() {
+            const exampleData = [
+
+                {
+                    "domanda": "Cos'è un sistema informativo aziendale e quali sono i suoi obiettivi primari?",
+                    "risposta": "Un sistema informativo aziendale è un insieme di elementi che interagiscono attivamente tra loro per raggiungere obiettivi comuni. Il suo scopo principale è fornire informazioni utili a tutti gli utenti, sia interni all'azienda come i dipendenti sia esterni come collaboratori, fornitori e clienti. In sintesi, può essere definito come un insieme di risorse e procedure organizzate per erogare servizi attraverso la diffusione di informazioni."
+                },
+                {
+                    "domanda": "Qual è la differenza fondamentale tra un sistema informativo e un sistema informatico?",
+                    "risposta": "Non bisogna confondere un sistema informativo con un sistema informatico. Il sistema informatico è la porzione del sistema informativo in cui la gestione delle informazioni avviene in modo automatico, tramite strumenti come i computer. Pertanto, il sistema informatico è da considerarsi una parte o un sottosistema del sistema informativo. I sistemi informativi, infatti, esistono da prima dell'avvento dei computer, quando si basavano su supporti cartacei e procedure manuali."
+                },
+                {
+                    "domanda": "Quali sono i componenti principali di un sistema informativo?",
+                    "risposta": "Un sistema informativo è composto da diversi elementi che interagiscono tra loro: Dati: La materia prima del sistema, costituiti da elementi grezzi, non organizzati e non ancora elaborati. Procedure: Le operazioni che permettono di elaborare i dati per trasformarli in informazioni utili. Persone: Figure con un ruolo primario, che possono essere sviluppatori, manutentori, utenti finali o persone che eseguono procedure manuali. Servizi: Le funzionalità che il sistema offre ai suoi utenti. Sistema Informatico o Strumenti: L'insieme di hardware e software il sottosistema informatico che automatizza la gestione delle informazioni."
+                },
+                {
+                    "domanda": "Spiega la differenza tra 'dato' e 'informazione' usando un esempio.",
+                    "risposta": "La differenza è cruciale: il dato è un elemento grezzo, una rappresentazione simbolica che, di per sé, non ha un significato immediato. L'informazione, invece, è il risultato dell'interpretazione e della correlazione dei dati, che permette di acquisire conoscenza su fatti o situazioni. Esempio pratico: trovare scritto su un foglio Bitto 2 è un dato. Questa sequenza di caratteri e numeri non fornisce alcuna informazione da sola. Tuttavia, se questo dato risponde a domande specifiche come Chi è il docente di Matematica e In quale ufficio si trova, allora assume un significato e diventa un'informazione utile."
+                },
+                {
+                    "domanda": "Quali sono le attività principali svolte dalle procedure di un sistema informativo?",
+                    "risposta": "Le procedure sono le regole e le operazioni che trasformano i dati grezzi in informazioni. Si articolano in quattro fasi principali: 1. Raccolta e verifica dei dati: Acquisizione dei dati in ingresso, che può essere manuale o automatica, seguita da una convalida per assicurarne la compatibilità. 2. Aggiornamento archivi: Gestione dei dati memorizzati, che include operazioni di inserimento di nuovi dati, modifica di quelli esistenti e cancellazione. 3. Elaborazione: Esecuzione di operazioni sui dati come ricerche, ordinamenti, accorpamenti e calcolo di statistiche per generare nuove informazioni. 4. Scambio dati e o informazioni: Trasferimento di dati o informazioni tra diverse parti del sistema o verso sistemi esterni."
+                },
+                {
+                    "domanda": "Quali sono i diversi ruoli che le persone ricoprono all'interno di un sistema informativo?",
+                    "risposta": "Le persone hanno sempre un ruolo primario e si possono classificare in tre categorie principali: 1. Gruppo di sviluppo: Comprende gli sviluppatori e i manutentori del sistema informatico o di sue componenti. Questo gruppo è in costante contatto con il cliente per adattare ed evolvere il sistema. 2. Persone nel sistema: Sono coloro che eseguono le procedure manuali. Non tutte le operazioni possono o devono essere automatizzate per ragioni di costi, complessità o semplice praticità. 3. Utenti finali: Coloro che utilizzano i servizi forniti dal sistema informativo per le proprie attività."
+                },
+                {
+                    "domanda": "Che tipi di servizi può fornire un sistema informativo? Fai degli esempi.",
+                    "risposta": "Un sistema informativo fornisce servizi ai suoi utenti, che possono essere operatori umani, altri sistemi esterni o computer in rete. I servizi si dividono principalmente in due categorie: Servizi real-time in tempo reale: In questi servizi, i dati e le informazioni devono essere elaborati entro intervalli di tempo molto brevi e prestabiliti. Sono tipici dei sistemi interattivi. Esempi includono la prenotazione di un posto per un volo aereo o per il cinema. Servizi batch a lotti: Questi servizi non richiedono una risposta immediata e vengono eseguiti in momenti prefissati di notte o a fine mese per elaborare grandi quantità di dati. Un esempio classico è l'elaborazione degli stipendi paghe alla fine del mese."
+                }
+
+            ]
+            document.getElementById('jsonInput').value = JSON.stringify(exampleData, null, 2);
+        }
+
+        function loadFlashcards() {
+            const jsonInput = document.getElementById('jsonInput').value;
+
+            try {
+                const data = JSON.parse(jsonInput);
+
+                // Validate data structure
+                if (!Array.isArray(data)) {
+                    throw new Error('Il JSON deve essere un array');
+                }
+
+                if (data.length === 0) {
+                    throw new Error('L\'array non può essere vuoto');
+                }
+
+                for (let i = 0; i < data.length; i++) {
+                    if (!data[i].domanda || !data[i].risposta) {
+                        throw new Error(`La card ${i + 1} deve avere sia "domanda" che "risposta"`);
+                    }
+                }
+
+                flashcards = data;
+                currentIndex = 0;
+                viewedCards.clear();
+
+                errorMessage.style.display = 'none';
+                flashcardsContainer.classList.add('active');
+
+                // Automatically hide the input section and show the toggle button
+                inputSection.classList.add('hidden');
+                // toggleBtn.style.display = 'block';
+                // toggleBtn.textContent = 'Mostra Input';
+
+
+                displayCard();
+                updateProgress();
+
+
+            } catch (error) {
+                errorMessage.textContent = 'Errore: ' + error.message;
+                errorMessage.style.display = 'block';
+                // Also show the input section if there's an error
+                inputSection.classList.remove('hidden');
+                toggleBtn.style.display = 'none';
+            }
+        }
+
+        function displayCard() {
+            if (flashcards.length === 0) return;
+
+            const card = flashcards[currentIndex];
+            document.getElementById('questionText').textContent = card.domanda;
+            document.getElementById('answerText').textContent = card.risposta;
+
+            document.getElementById('flashcard').classList.remove('flipped');
+
+            document.getElementById('cardCounter').textContent =
+                `Card ${currentIndex + 1} di ${flashcards.length}`;
+
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === flashcards.length - 1;
+
+            viewedCards.add(currentIndex);
+            updateProgress();
+        }
+
+        function flipCard() {
+            document.getElementById('flashcard').classList.toggle('flipped');
+        }
+
+        function nextCard() {
+            if (currentIndex < flashcards.length - 1) {
+                currentIndex++;
+                displayCard();
+            }
+        }
+
+        function previousCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayCard();
+            }
+        }
+
+        function shuffleCards() {
+            // Fisher-Yates shuffle
+            for (let i = flashcards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcards[i], flashcards[j]] = [flashcards[j], flashcards[i]];
+            }
+            currentIndex = 0;
+            viewedCards.clear();
+            displayCard();
+        }
+
+        function updateProgress() {
+            const percentage = (viewedCards.size / flashcards.length) * 100;
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        document.getElementById("copy-btn").addEventListener("click", async () => {
+            const pre = document.getElementById("json-format");
+            try {
+                await navigator.clipboard.writeText(pre.innerText);
+            } catch (err) {
+                console.error("Errore durante la copia: ", err);
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function (e) {
+            if (flashcards.length === 0) return;
+
+            switch (e.key) {
+                case 'ArrowLeft':
+                    previousCard();
+                    break;
+                case 'ArrowRight':
+                    nextCard();
+                    break;
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    flipCard();
+                    break;
+            }
+        });
+    </script>
+</body>
+
+</html>
