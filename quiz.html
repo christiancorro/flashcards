@@ -7,7 +7,7 @@
     <meta name="author" content="Christian Corrò">
     <link rel="icon" href="img/icon.png" type="image/png">
 
-    <title>Quiz App</title>
+    <title>Quiz</title>
     <style>
         * {
             margin: 0;
@@ -456,7 +456,7 @@
 
 <body>
     <div class="container">
-        <h1>🧠 Quiz App</h1>
+        <h1>Quiz</h1>
         <button id="toggleBtn" class="secondary" onclick="toggleInputSection()"><i class="fas fa-gear"></i></button>
 
         <div class="input-section" id="input-section">
@@ -513,11 +513,11 @@ Note:
                     <button class="action-button" onclick="previousQuestion()" id="prevBtn">
                         ← Precedente
                     </button>
-                    <button class="action-button primary" onclick="checkAnswer()" id="checkBtn">
-                        Verifica Risposta
-                    </button>
                     <button class="action-button shuffle" onclick="shuffleQuiz()">
                         🔀 Mescola
+                    </button>
+                    <button class="action-button primary" onclick="checkAnswer()" id="checkBtn">
+                        Verifica Risposta
                     </button>
                     <button class="action-button" onclick="nextQuestion()" id="nextBtn">
                         Successiva →
